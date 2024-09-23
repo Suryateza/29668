@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Clock Widget</title>
+    <style>body {
+        font-family: Arial, sans-serif;
+        background-color: #f0f0f0;
+        color: #333;
+        margin: 0;
+        padding: 20px;
+    }
+    
+    .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+    }
+    
+    .city-list, .time-difference {
+        margin-bottom: 20px;
+    }
+    
+    h1, h2 {
+        text-align: center;
+    }
+    
+    .clock {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+    }
+    
+    button {
+        cursor: pointer;
+        padding: 5px 10px;
+    }
+    
+    input[type="text"] {
+        width: calc(100% - 20px);
+        padding: 10px;
+        margin-right: 10px;
+    }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>World Clock Widget</h1>
+        <div class="city-list">
+            <input type="text" id="city-input" placeholder="Add city (e.g., New York)">
+            <button id="add-city">Add City</button>
+        </div>
+        <div id="clocks"></div>
+        <div class="time-difference">
+            <h2>Time Zone Comparison</h2>
+            <input type="text" id="zone1" placeholder="Time Zone 1 (e.g., UTC-5)">
+            <input type="text" id="zone2" placeholder="Time Zone 2 (e.g., UTC+1)">
+            <button id="calculate-difference">Calculate Difference</button>
+            <div id="difference-output"></div>
+        </div>
+    </div>
+    <script>const clocksContainer = document.getElementById('clocks');
+        const addCityButton = document.getElementById('add-city');
+        const cityInput = document.getElementById('city-input');
+        const zone1Input = document.getElementById('zone1');
+        const zone2Input = document.getElementById('zone2');
+        const calculateButton = document.getElementById('calculate-difference');
+        const differenceOutput = document.getElementById('difference-output');
+        
+        const cities = {};
+        
+        function updateClocks() {
+            clocksContainer.innerHTML = '';
+            for (const city in cities) {
+                const time = new Date().toLocaleString("en-US", {
+                    timeZone: cities[city],
+                    timeStyle: "short",
+                });
+                clocksContainer.innerHTML += `<div class="clock">${city}: ${time}</div>`;
+            }
+        }
+        
+        addCityButton.addEventListener('click', () => {
+            const cityName = cityInput.value.trim();
+            if (cityName) {
+                const timeZone = prompt(`Enter time zone for ${cityName} (e.g., America/New_York):`);
+                if (timeZone) {
+                    cities[cityName] = timeZone;
+                    updateClocks();
+                    cityInput.value = '';
+                }
+            }
+        });
+        
+        calculateButton.addEventListener('click', () => {
+            const zone1 = zone1Input.value.trim();
+            const zone2 = zone2Input.value.trim();
+            const date = new Date();
+            
+            const offset1 = (new Date(date.toLocaleString("en-US", { timeZone: zone1 }))).getTimezoneOffset();
+            const offset2 = (new Date(date.toLocaleString("en-US", { timeZone: zone2 }))).getTimezoneOffset();
+            
+            const difference = (offset2 - offset1) / 60;
+            differenceOutput.innerText = `Time difference: ${difference} hours`;
+        });
+        
+        // Update clocks every minute
+        setInterval(updateClocks, 60000);
+        updateClocks();
+        </script>
+</body>
+</html>
