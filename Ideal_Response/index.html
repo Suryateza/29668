@@ -98,6 +98,14 @@
         const compareBtn = document.getElementById('compare-btn');
         const timeDifferenceElement = document.getElementById('time-difference');
         
+        // Time zones mapping
+        const timeZoneMap = {
+            "New York": "America/New_York",
+            "London": "Europe/London",
+            "Tokyo": "Asia/Tokyo",
+            "Sydney": "Australia/Sydney",
+        };
+        
         function updateClock() {
             cityListElement.innerHTML = '';
             cities.forEach(city => {
@@ -109,18 +117,12 @@
         }
         
         function getTimeZone(city) {
-            const timeZones = {
-                "New York": "America/New_York",
-                "London": "Europe/London",
-                "Tokyo": "Asia/Tokyo",
-                "Sydney": "Australia/Sydney",
-            };
-            return timeZones[city] || "UTC";
+            return timeZoneMap[city] || "UTC";
         }
         
         function addCity() {
             const newCity = cityInput.value.trim();
-            if (newCity && !cities.includes(newCity)) {
+            if (newCity && !cities.includes(newCity) && newCity in timeZoneMap) {
                 cities.push(newCity);
                 cityInput.value = '';
                 updateClock();
@@ -131,24 +133,25 @@
             const tz1 = tz1Input.value.trim();
             const tz2 = tz2Input.value.trim();
         
-            if (tz1 && tz2) {
-                const offset1 = getTimeOffset(tz1);
-                const offset2 = getTimeOffset(tz2);
+            const timeZone1 = getTimeZone(tz1);
+            const timeZone2 = getTimeZone(tz2);
+        
+            if (timeZone1 !== "UTC" && timeZone2 !== "UTC") {
+                const now = new Date();
+                const offset1 = (new Date(now.toLocaleString("en-US", { timeZone: timeZone1 })).getHours());
+                const offset2 = (new Date(now.toLocaleString("en-US", { timeZone: timeZone2 })).getHours());
                 const difference = Math.abs(offset1 - offset2);
                 timeDifferenceElement.textContent = `Time difference: ${difference} hour(s)`;
+            } else {
+                timeDifferenceElement.textContent = "Invalid time zone specified.";
             }
-        }
-        
-        function getTimeOffset(timeZone) {
-            const now = new Date();
-            const options = { timeZone, hour: 'numeric', minute: 'numeric' };
-            return now.toLocaleString('en-US', options).split(':')[0]; // Returns hour part
         }
         
         addCityBtn.addEventListener('click', addCity);
         compareBtn.addEventListener('click', compareTimeZones);
         setInterval(updateClock, 1000);
         updateClock();
+        
         </script>
 </body>
 </html>
