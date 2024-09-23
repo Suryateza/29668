@@ -8,146 +8,147 @@
         font-family: Arial, sans-serif;
         background-color: #f0f0f0;
         color: #333;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
         margin: 0;
-        padding: 20px;
     }
     
     .container {
-        max-width: 600px;
-        margin: 0 auto;
         background: white;
         border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         padding: 20px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        width: 400px;
     }
     
-    .city-list, .time-difference {
-        margin-bottom: 20px;
-    }
-    
-    h1, h2 {
+    h1 {
         text-align: center;
     }
     
-    .clock {
+    .clock-display {
+        margin-bottom: 20px;
+    }
+    
+    .add-city {
         display: flex;
         justify-content: space-between;
+    }
+    
+    #city-input {
+        flex: 1;
         padding: 10px;
-        border-bottom: 1px solid #ddd;
+        margin-right: 10px;
     }
     
     button {
+        background-color: #007BFF;
+        color: white;
+        border: none;
+        padding: 10px;
         cursor: pointer;
-        padding: 5px 10px;
+        border-radius: 5px;
     }
     
-    input[type="text"] {
-        width: calc(100% - 20px);
+    button:hover {
+        background-color: #0056b3;
+    }
+    
+    .timezone-comparison {
+        margin-top: 20px;
+    }
+    
+    #tz1, #tz2 {
+        width: 48%;
         padding: 10px;
-        margin-right: 10px;
+        margin-right: 4%;
+    }
+    
+    #time-difference {
+        margin-top: 10px;
+        font-weight: bold;
     }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>World Clock Widget</h1>
-        <div class="city-list">
-            <input type="text" id="city-input" placeholder="Add city (e.g., New York)">
-            <button id="add-city">Add City</button>
+        <div class="clock-display">
+            <div id="city-list"></div>
+            <div class="add-city">
+                <input type="text" id="city-input" placeholder="Add City (e.g., New York)">
+                <button id="add-city-btn">Add</button>
+            </div>
         </div>
-        <div id="clocks"></div>
-        <div class="time-difference">
-            <h2>Time Zone Comparison</h2>
-            <input type="text" id="zone1" placeholder="Time Zone 1 (e.g., UTC-5)">
-            <input type="text" id="zone2" placeholder="Time Zone 2 (e.g., UTC+1)">
-            <button id="calculate-difference">Calculate Difference</button>
-            <div id="difference-output"></div>
+        <div class="timezone-comparison">
+            <h2>Compare Time Zones</h2>
+            <input type="text" id="tz1" placeholder="Time Zone 1 (e.g., GMT-5)">
+            <input type="text" id="tz2" placeholder="Time Zone 2 (e.g., GMT+1)">
+            <button id="compare-btn">Compare</button>
+            <div id="time-difference"></div>
         </div>
     </div>
-    <script>const clocksContainer = document.getElementById('clocks');
-        const addCityButton = document.getElementById('add-city');
+    <script>const cities = ["New York", "London", "Tokyo", "Sydney"]; // Default cities
+        const cityListElement = document.getElementById('city-list');
         const cityInput = document.getElementById('city-input');
-        const zone1Input = document.getElementById('zone1');
-        const zone2Input = document.getElementById('zone2');
-        const calculateButton = document.getElementById('calculate-difference');
-        const differenceOutput = document.getElementById('difference-output');
-        const validTimeZones = Intl.supportedValuesOf("timeZone");
-
-function isValidTimeZone(timeZone) {
-    return validTimeZones.includes(timeZone);
-}
-
-addCityButton.addEventListener('click', () => {
-    const cityName = cityInput.value.trim();
-    if (cityName) {
-        const timeZone = prompt(`Enter time zone for ${cityName} (e.g., America/New_York):`);
-        if (timeZone && isValidTimeZone(timeZone)) {
-            cities[cityName] = timeZone;
-            updateClocks();
-            cityInput.value = '';
-        } else {
-            alert("Invalid time zone. Please try again.");
+        const addCityBtn = document.getElementById('add-city-btn');
+        const tz1Input = document.getElementById('tz1');
+        const tz2Input = document.getElementById('tz2');
+        const compareBtn = document.getElementById('compare-btn');
+        const timeDifferenceElement = document.getElementById('time-difference');
+        
+        function updateClock() {
+            cityListElement.innerHTML = '';
+            cities.forEach(city => {
+                const time = new Date().toLocaleString("en-US", { timeZone: getTimeZone(city) });
+                const cityElement = document.createElement('div');
+                cityElement.textContent = `${city}: ${time}`;
+                cityListElement.appendChild(cityElement);
+            });
         }
-    }
-});
-
-calculateButton.addEventListener('click', () => {
-    const zone1 = zone1Input.value.trim();
-    const zone2 = zone2Input.value.trim();
-    
-    if (isValidTimeZone(zone1) && isValidTimeZone(zone2)) {
-        const date = new Date();
-        const offset1 = (new Date(date.toLocaleString("en-US", { timeZone: zone1 }))).getTimezoneOffset();
-        const offset2 = (new Date(date.toLocaleString("en-US", { timeZone: zone2 }))).getTimezoneOffset();
         
-        const difference = (offset2 - offset1) / 60;
-        differenceOutput.innerText = `Time difference: ${difference} hours`;
-    } else {
-        alert("One or both of the time zones are invalid. Please check and try again.");
-    }
-});
-
+        function getTimeZone(city) {
+            const timeZones = {
+                "New York": "America/New_York",
+                "London": "Europe/London",
+                "Tokyo": "Asia/Tokyo",
+                "Sydney": "Australia/Sydney",
+            };
+            return timeZones[city] || "UTC";
+        }
         
-        const cities = {};
-        
-        function updateClocks() {
-            clocksContainer.innerHTML = '';
-            for (const city in cities) {
-                const time = new Date().toLocaleString("en-US", {
-                    timeZone: cities[city],
-                    timeStyle: "short",
-                });
-                clocksContainer.innerHTML += `<div class="clock">${city}: ${time}</div>`;
+        function addCity() {
+            const newCity = cityInput.value.trim();
+            if (newCity && !cities.includes(newCity)) {
+                cities.push(newCity);
+                cityInput.value = '';
+                updateClock();
             }
         }
         
-        addCityButton.addEventListener('click', () => {
-            const cityName = cityInput.value.trim();
-            if (cityName) {
-                const timeZone = prompt(`Enter time zone for ${cityName} (e.g., America/New_York):`);
-                if (timeZone) {
-                    cities[cityName] = timeZone;
-                    updateClocks();
-                    cityInput.value = '';
-                }
+        function compareTimeZones() {
+            const tz1 = tz1Input.value.trim();
+            const tz2 = tz2Input.value.trim();
+        
+            if (tz1 && tz2) {
+                const offset1 = getTimeOffset(tz1);
+                const offset2 = getTimeOffset(tz2);
+                const difference = Math.abs(offset1 - offset2);
+                timeDifferenceElement.textContent = `Time difference: ${difference} hour(s)`;
             }
-        });
+        }
         
-        calculateButton.addEventListener('click', () => {
-            const zone1 = zone1Input.value.trim();
-            const zone2 = zone2Input.value.trim();
-            const date = new Date();
-            
-            const offset1 = (new Date(date.toLocaleString("en-US", { timeZone: zone1 }))).getTimezoneOffset();
-            const offset2 = (new Date(date.toLocaleString("en-US", { timeZone: zone2 }))).getTimezoneOffset();
-            
-            const difference = (offset2 - offset1) / 60;
-            differenceOutput.innerText = `Time difference: ${difference} hours`;
-        });
+        function getTimeOffset(timeZone) {
+            const now = new Date();
+            const options = { timeZone, hour: 'numeric', minute: 'numeric' };
+            return now.toLocaleString('en-US', options).split(':')[0]; // Returns hour part
+        }
         
-        // Update clocks every minute
-        setInterval(updateClocks, 60000);
-        updateClocks();
+        addCityBtn.addEventListener('click', addCity);
+        compareBtn.addEventListener('click', compareTimeZones);
+        setInterval(updateClock, 1000);
+        updateClock();
         </script>
 </body>
 </html>
