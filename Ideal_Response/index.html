@@ -4,233 +4,120 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>World Clock Widget</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-image: url('https://source.unsplash.com/1920x1080/?city,night'); /* Background image */
-            background-size: cover;
-            color: #fff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            backdrop-filter: blur(5px); /* Adds blur effect to the background */
-        }
-
-        .container {
-            background: rgba(255, 255, 255, 0.8); /* Semi-transparent white */
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-            width: 400px;
-            transition: all 0.3s;
-        }
-
-        .container:hover {
-            box-shadow: 0 6px 30px rgba(0, 0, 0, 0.3);
-        }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 24px;
-            color: #007BFF;
-        }
-
-        .clock-display {
-            margin-bottom: 20px;
-            border-bottom: 1px solid #e0e0e0;
-            padding-bottom: 10px;
-        }
-
-        .add-city {
-            display: flex;
-            justify-content: space-between;
-        }
-
-        #city-input {
-            flex: 1;
-            padding: 10px;
-            margin-right: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background-color: #f9f9f9;
-            transition: border-color 0.3s;
-        }
-
-        #city-input:focus {
-            border-color: #007BFF;
-            outline: none;
-        }
-
-        button {
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            padding: 10px;
-            cursor: pointer;
-            border-radius: 5px;
-            transition: background-color 0.3s, transform 0.2s;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-            transform: scale(1.05);
-        }
-
-        .timezone-comparison {
-            margin-top: 20px;
-        }
-
-        .timezone-comparison h2 {
-            font-size: 18px;
-            margin-bottom: 10px;
-            color: #333;
-        }
-
-        #tz1, #tz2 {
-            width: 48%;
-            padding: 10px;
-            margin-right: 4%;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background-color: #f9f9f9;
-        }
-
-        #tz1 {
-            margin-right: 0;
-        }
-
-        #time-difference {
-            margin-top: 10px;
-            font-weight: bold;
-            color: #d9534f;
-        }
-
-        .city-item {
-            padding: 10px;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        .city-item:last-child {
-            border-bottom: none;
-        }
-
-        @media (max-width: 450px) {
-            .container {
-                width: 90%;
-            }
-
-            .add-city {
-                flex-direction: column;
-            }
-
-            #city-input {
-                margin-right: 0;
-                margin-bottom: 10px;
-                width: 100%;
-            }
-
-            #tz1, #tz2 {
-                width: 100%;
-                margin-right: 0;
-                margin-bottom: 10px;
-            }
-        }
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>body {
+        background-color: #f8f9fa;
+        color: #343a40;
+    }
+    
+    .dark-mode {
+        background-color: #343a40;
+        color: #f8f9fa;
+    }
+    
+    .list-group-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    #map {
+        height: 400px;
+        background-color: #e9ecef;
+    }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>World Clock Widget</h1>
-        <div class="clock-display">
-            <div id="city-list"></div>
-            <div class="add-city">
-                <input type="text" id="city-input" placeholder="Add City (e.g., New York)">
-                <button id="add-city-btn">Add</button>
+        <h1 class="text-center">World Clock Widget</h1>
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h4>Current Times</h4>
+                <div id="clockDisplay" class="list-group"></div>
+            </div>
+            <div class="col-md-6">
+                <h4>Time Zone Comparison</h4>
+                <div class="form-group">
+                    <input type="text" id="tz1" class="form-control" placeholder="Enter first timezone (e.g., 'America/New_York')">
+                    <input type="text" id="tz2" class="form-control mt-2" placeholder="Enter second timezone (e.g., 'Europe/London')">
+                    <button id="compareBtn" class="btn btn-primary mt-2">Compare Time Zones</button>
+                </div>
+                <div id="timeDifference" class="mt-3"></div>
             </div>
         </div>
-        <div class="timezone-comparison">
-            <h2>Compare Time Zones</h2>
-            <input type="text" id="tz1" placeholder="Time Zone 1 (e.g., GMT-5)">
-            <input type="text" id="tz2" placeholder="Time Zone 2 (e.g., GMT+1)">
-            <button id="compare-btn">Compare</button>
-            <div id="time-difference"></div>
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <h4>Customize Cities</h4>
+                <input type="text" id="cityInput" class="form-control" placeholder="Add a city (e.g., 'Tokyo')">
+                <button id="addCityBtn" class="btn btn-success mt-2">Add City</button>
+                <ul id="customCities" class="list-group mt-3"></ul>
+            </div>
         </div>
+        <button id="toggleMode" class="btn btn-secondary">Toggle Dark/Light Mode</button>
+        <div id="map" class="mt-4"></div>
     </div>
-    <script>
-        const cities = ["New York", "London", "Tokyo", "Sydney"]; // Default cities
-        const cityListElement = document.getElementById('city-list');
-        const cityInput = document.getElementById('city-input');
-        const addCityBtn = document.getElementById('add-city-btn');
-        const tz1Input = document.getElementById('tz1');
-        const tz2Input = document.getElementById('tz2');
-        const compareBtn = document.getElementById('compare-btn');
-        const timeDifferenceElement = document.getElementById('time-difference');
 
-        // Time zones mapping
-        const timeZoneMap = {
-            "New York": "America/New_York",
-            "London": "Europe/London",
-            "Tokyo": "Asia/Tokyo",
-            "Sydney": "Australia/Sydney",
-        };
-
-        // Default time zone for added cities
-        function getDefaultTimeZone(city) {
-            return "UTC"; // Default for any user-added city
-        }
-
-        function updateClock() {
-            cityListElement.innerHTML = '';
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment/moment.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.34/moment-timezone-with-data.min.js"></script>
+    <script>const cities = ['America/New_York', 'Europe/London', 'Asia/Tokyo', 'Australia/Sydney'];
+        const cityDisplay = document.getElementById('clockDisplay');
+        const customCities = document.getElementById('customCities');
+        const toggleModeBtn = document.getElementById('toggleMode');
+        let darkMode = false;
+        
+        // Function to display current time for each city
+        function updateClocks() {
+            cityDisplay.innerHTML = '';
             cities.forEach(city => {
-                const time = new Date().toLocaleString("en-US", { timeZone: getTimeZone(city) });
-                const cityElement = document.createElement('div');
-                cityElement.className = 'city-item';
-                cityElement.textContent = `${city}: ${time}`;
-                cityListElement.appendChild(cityElement);
+                const time = moment.tz(city).format('HH:mm:ss');
+                const cityItem = document.createElement('div');
+                cityItem.className = 'list-group-item';
+                cityItem.innerHTML = `${city}: <strong>${time}</strong>`;
+                cityDisplay.appendChild(cityItem);
             });
         }
-
-        function getTimeZone(city) {
-            return timeZoneMap[city] || getDefaultTimeZone(city);
-        }
-
-        function addCity() {
-            const newCity = cityInput.value.trim();
-            if (newCity && !cities.includes(newCity)) {
-                cities.push(newCity);
-                cityInput.value = '';
-                updateClock(); // Update the clock display immediately
-            } else if (cities.includes(newCity)) {
-                alert("City already added.");
+        
+        // Function to compare time zones
+        document.getElementById('compareBtn').addEventListener('click', () => {
+            const tz1 = document.getElementById('tz1').value;
+            const tz2 = document.getElementById('tz2').value;
+        
+            if (moment.tz.zone(tz1) && moment.tz.zone(tz2)) {
+                const time1 = moment.tz(tz1).format('HH:mm:ss');
+                const time2 = moment.tz(tz2).format('HH:mm:ss');
+                const diff = moment.tz(tz1).utcOffset() - moment.tz(tz2).utcOffset();
+                const differenceText = `Time difference between ${tz1} and ${tz2} is ${diff / 60} hours.`;
+                document.getElementById('timeDifference').innerHTML = `${tz1}: ${time1} | ${tz2}: ${time2} <br> ${differenceText}`;
             } else {
-                alert("Invalid city. Please enter a recognized city name.");
+                alert('Invalid timezone entered.');
             }
-        }
-
-        function compareTimeZones() {
-            const tz1 = tz1Input.value.trim();
-            const tz2 = tz2Input.value.trim();
-
-            const timeZone1 = getTimeZone(tz1);
-            const timeZone2 = getTimeZone(tz2);
-
-            if (timeZone1 !== "UTC" && timeZone2 !== "UTC") {
-                const now = new Date();
-                const offset1 = (new Date(now.toLocaleString("en-US", { timeZone: timeZone1 })).getHours());
-                const offset2 = (new Date(now.toLocaleString("en-US", { timeZone: timeZone2 })).getHours());
-                const difference = Math.abs(offset1 - offset2);
-                timeDifferenceElement.textContent = `Time difference: ${difference} hour(s)`;
+        });
+        
+        // Function to add a custom city
+        document.getElementById('addCityBtn').addEventListener('click', () => {
+            const cityInput = document.getElementById('cityInput').value;
+            if (moment.tz.zone(cityInput)) {
+                cities.push(cityInput);
+                const cityItem = document.createElement('li');
+                cityItem.className = 'list-group-item';
+                cityItem.innerHTML = cityInput;
+                customCities.appendChild(cityItem);
+                document.getElementById('cityInput').value = '';
             } else {
-                timeDifferenceElement.textContent = "Invalid time zone specified.";
+                alert('Invalid timezone entered.');
             }
-        }
-
-        addCityBtn.addEventListener('click', addCity);
-        compareBtn.addEventListener('click', compareTimeZones);
-        setInterval(updateClock, 1000);
-        updateClock();
-    </script>
+        });
+        
+        // Function to toggle dark/light mode
+        toggleModeBtn.addEventListener('click', () => {
+            darkMode = !darkMode;
+            document.body.classList.toggle('dark-mode', darkMode);
+        });
+        
+        // Update clocks every second
+        setInterval(updateClocks, 1000);
+        updateClocks();
+        </script>
 </body>
 </html>
