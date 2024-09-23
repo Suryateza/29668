@@ -71,6 +71,42 @@
         const zone2Input = document.getElementById('zone2');
         const calculateButton = document.getElementById('calculate-difference');
         const differenceOutput = document.getElementById('difference-output');
+        const validTimeZones = Intl.supportedValuesOf("timeZone");
+
+function isValidTimeZone(timeZone) {
+    return validTimeZones.includes(timeZone);
+}
+
+addCityButton.addEventListener('click', () => {
+    const cityName = cityInput.value.trim();
+    if (cityName) {
+        const timeZone = prompt(`Enter time zone for ${cityName} (e.g., America/New_York):`);
+        if (timeZone && isValidTimeZone(timeZone)) {
+            cities[cityName] = timeZone;
+            updateClocks();
+            cityInput.value = '';
+        } else {
+            alert("Invalid time zone. Please try again.");
+        }
+    }
+});
+
+calculateButton.addEventListener('click', () => {
+    const zone1 = zone1Input.value.trim();
+    const zone2 = zone2Input.value.trim();
+    
+    if (isValidTimeZone(zone1) && isValidTimeZone(zone2)) {
+        const date = new Date();
+        const offset1 = (new Date(date.toLocaleString("en-US", { timeZone: zone1 }))).getTimezoneOffset();
+        const offset2 = (new Date(date.toLocaleString("en-US", { timeZone: zone2 }))).getTimezoneOffset();
+        
+        const difference = (offset2 - offset1) / 60;
+        differenceOutput.innerText = `Time difference: ${difference} hours`;
+    } else {
+        alert("One or both of the time zones are invalid. Please check and try again.");
+    }
+});
+
         
         const cities = {};
         
