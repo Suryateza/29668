@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Clock Widget</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" />
+    <style>
+        body { font-family: Arial, sans-serif; transition: background-color 0.3s, color 0.3s; }
+        .light-mode { background: #fff; color: #000; }
+        .dark-mode { background: #333; color: #fff; }
+        #clocks, #map { width: 100%; max-width: 1200px; margin: 20px auto; }
+        .clock { padding: 10px; margin: 5px; border: 1px solid #ccc; display: inline-block; }
+        .theme-toggle, .format-toggle { margin: 10px; }
+        #timeComparison { margin-top: 20px; }
+    </style>
+</head>
+<body class="light-mode">
+    <div id="controls">
+        <button onclick="toggleTheme()">Toggle Theme</button>
+        <button onclick="toggleTimeFormat()">Toggle Time Format</button>
+    </div>
+    <div id="clocks"></div>
+    <div id="timeComparison">
+        <input id="zone1" placeholder="Time Zone 1" list="timezones">
+        <input id="zone2" placeholder="Time Zone 2" list="timezones">
+        <button onclick="compareTimeZones()">Compare</button>
+        <p id="timeDifference"></p>
+    </div>
+    <div id="map" style="height: 400px;"></div>
+
+    <datalist id="timezones">
+        <!-- Options will be populated dynamically -->
+    </datalist>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.33/moment-timezone-with-data.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
+    <script>
+        const clocksDiv = document.getElementById('clocks');
+        const timeDifferenceDiv = document.getElementById('timeDifference');
+        let is24HourFormat = false;
+
+        function updateClocks() {
+            const now = moment();
+            const cities = ['America/New_York', 'Europe/London', 'Asia/Tokyo', 'Australia/Sydney'];
+            cities.forEach(city => {
+                const time = now.tz(city).format(is24HourFormat ? 'HH:mm:ss' : 'h:mm:ss A');
+                let clockElement = document.querySelector(`[data-city="${city}"]`);
+                if (!clockElement) {
+                    clockElement = document.createElement('div');
+                    clockElement.className = 'clock';
+                    clockElement.setAttribute('data-city', city);
+                    clockElement.innerHTML = `<span>${city.split('/').pop().replace('_', ' ')}</span>: <span>${time}</span>`;
+                    clocksDiv.appendChild(clockElement);
+                } else {
+                    clockElement.querySelector('span:last-child').textContent = time;
+                }
+            });
+        }
+
+        function compareTimeZones() {
+            const zone1 = document.getElementById('zone1').value;
+            const zone2 = document.getElementById('zone2').value;
+            if (zone1 && zone2) {
+                const time1 = moment().tz(zone1);
+                const time2 = moment().tz(zone2);
+                const diff = time1.diff(time2, 'hours');
+                timeDifferenceDiv.textContent = `Time difference: ${Math.abs(diff)} hours`;
+            }
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('light-mode');
+            document.body.classList.toggle('dark-mode');
+        }
+
+        function toggleTimeFormat() {
+            is24HourFormat = !is24HourFormat;
+            updateClocks();
+        }
+
+        // Initialize map
+        const map = L.map('map').setView([0, 0], 1);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Update clocks every second
+        setInterval(updateClocks, 1000);
+        updateClocks();
+
+        // Populate timezones
+        moment.tz.names().forEach(zone => {
+            const option = document.createElement('option');
+            option.value = zone;
+            document.querySelector('#timezones').appendChild(option);
+        });
+    </script>
+</body>
+</html>
