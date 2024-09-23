@@ -5,27 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>World Clock Widget</title>
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <style>body {
-        background-color: #f8f9fa;
-        color: #343a40;
-    }
-    
-    .dark-mode {
-        background-color: #343a40;
-        color: #4d8fd2;
-        
-    }
-    
-    .list-group-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    #map {
-        height: 400px;
-        background-color: #e9ecef;
-    }
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        body {
+            background-color: #f8f9fa;
+            color: #343a40;
+        }
+
+        .dark-mode {
+            background-color: #343a40;
+            color: #4d8fd2;
+        }
+
+        .list-group-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #map {
+            height: 400px;
+        }
     </style>
 </head>
 <body>
@@ -61,12 +61,22 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/moment/moment.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.34/moment-timezone-with-data.min.js"></script>
-    <script>const cities = ['America/New_York', 'Europe/London', 'Asia/Tokyo', 'Australia/Sydney'];
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        const cities = ['America/New_York', 'Europe/London', 'Asia/Tokyo', 'Australia/Sydney'];
         const cityDisplay = document.getElementById('clockDisplay');
         const customCities = document.getElementById('customCities');
         const toggleModeBtn = document.getElementById('toggleMode');
         let darkMode = false;
-        
+
+        // Function to initialize the map
+        function initMap() {
+            const map = L.map('map').setView([20, 0], 2); // Centered on the world
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+            }).addTo(map);
+        }
+
         // Function to display current time for each city
         function updateClocks() {
             cityDisplay.innerHTML = '';
@@ -78,27 +88,32 @@
                 cityDisplay.appendChild(cityItem);
             });
         }
-        
+
+        // Function to validate timezone
+        function isValidTimezone(tz) {
+            return moment.tz.names().includes(tz);
+        }
+
         // Function to compare time zones
         document.getElementById('compareBtn').addEventListener('click', () => {
             const tz1 = document.getElementById('tz1').value;
             const tz2 = document.getElementById('tz2').value;
-        
-            if (moment.tz.zone(tz1) && moment.tz.zone(tz2)) {
+
+            if (isValidTimezone(tz1) && isValidTimezone(tz2)) {
                 const time1 = moment.tz(tz1).format('HH:mm:ss');
                 const time2 = moment.tz(tz2).format('HH:mm:ss');
-                const diff = moment.tz(tz1).utcOffset() - moment.tz(tz2).utcOffset();
-                const differenceText = `Time difference between ${tz1} and ${tz2} is ${diff / 60} hours.`;
+                const diff = (moment.tz(tz1).utcOffset() - moment.tz(tz2).utcOffset()) / 60;
+                const differenceText = `Time difference between ${tz1} and ${tz2} is ${diff} hours.`;
                 document.getElementById('timeDifference').innerHTML = `${tz1}: ${time1} | ${tz2}: ${time2} <br> ${differenceText}`;
             } else {
-                alert('Invalid timezone entered.');
+                alert('Invalid timezone entered. Please use a valid timezone name.');
             }
         });
-        
+
         // Function to add a custom city
         document.getElementById('addCityBtn').addEventListener('click', () => {
             const cityInput = document.getElementById('cityInput').value;
-            if (moment.tz.zone(cityInput)) {
+            if (isValidTimezone(cityInput)) {
                 cities.push(cityInput);
                 const cityItem = document.createElement('li');
                 cityItem.className = 'list-group-item';
@@ -106,19 +121,20 @@
                 customCities.appendChild(cityItem);
                 document.getElementById('cityInput').value = '';
             } else {
-                alert('Invalid timezone entered.');
+                alert('Invalid timezone entered. Please use a valid timezone name.');
             }
         });
-        
+
         // Function to toggle dark/light mode
         toggleModeBtn.addEventListener('click', () => {
             darkMode = !darkMode;
             document.body.classList.toggle('dark-mode', darkMode);
         });
-        
-        // Update clocks every second
+
+        // Initialize map and update clocks every second
+        initMap();
         setInterval(updateClocks, 1000);
         updateClocks();
-        </script>
+    </script>
 </body>
 </html>
