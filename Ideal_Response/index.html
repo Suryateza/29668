@@ -159,73 +159,79 @@
         </div>
     </div>
     <script>
-        const cities = ["New York", "London", "Tokyo", "Sydney"]; // Default cities
-        const cityListElement = document.getElementById('city-list');
-        const cityInput = document.getElementById('city-input');
-        const addCityBtn = document.getElementById('add-city-btn');
-        const tz1Input = document.getElementById('tz1');
-        const tz2Input = document.getElementById('tz2');
-        const compareBtn = document.getElementById('compare-btn');
-        const timeDifferenceElement = document.getElementById('time-difference');
-        
-        // Time zones mapping
-        const timeZoneMap = {
-            "New York": "America/New_York",
-            "London": "Europe/London",
-            "Tokyo": "Asia/Tokyo",
-            "Sydney": "Australia/Sydney",
-        };
-        
-        function updateClock() {
-            cityListElement.innerHTML = '';
-            cities.forEach(city => {
-                const time = new Date().toLocaleString("en-US", { timeZone: getTimeZone(city) });
-                const cityElement = document.createElement('div');
-                cityElement.className = 'city-item';
-                cityElement.textContent = `${city}: ${time}`;
-                cityListElement.appendChild(cityElement);
-            });
-        }
-        
-        function getTimeZone(city) {
-            return timeZoneMap[city] || "UTC";
-        }
-        
-        function addCity() {
-            const newCity = cityInput.value.trim();
-            if (newCity && !cities.includes(newCity)) {
-                cities.push(newCity);
-                cityInput.value = '';
-                updateClock();
-            } else if (cities.includes(newCity)) {
-                alert("City already added.");
-            } else {
-                alert("Invalid city. Please enter a recognized city name.");
-            }
-        }
-        
-        function compareTimeZones() {
-            const tz1 = tz1Input.value.trim();
-            const tz2 = tz2Input.value.trim();
-        
-            const timeZone1 = getTimeZone(tz1);
-            const timeZone2 = getTimeZone(tz2);
-        
-            if (timeZone1 !== "UTC" && timeZone2 !== "UTC") {
-                const now = new Date();
-                const offset1 = (new Date(now.toLocaleString("en-US", { timeZone: timeZone1 })).getHours());
-                const offset2 = (new Date(now.toLocaleString("en-US", { timeZone: timeZone2 })).getHours());
-                const difference = Math.abs(offset1 - offset2);
-                timeDifferenceElement.textContent = `Time difference: ${difference} hour(s)`;
-            } else {
-                timeDifferenceElement.textContent = "Invalid time zone specified.";
-            }
-        }
-        
-        addCityBtn.addEventListener('click', addCity);
-        compareBtn.addEventListener('click', compareTimeZones);
-        setInterval(updateClock, 1000);
-        updateClock();
+       const cities = ["New York", "London", "Tokyo", "Sydney"]; // Default cities
+const cityListElement = document.getElementById('city-list');
+const cityInput = document.getElementById('city-input');
+const addCityBtn = document.getElementById('add-city-btn');
+const tz1Input = document.getElementById('tz1');
+const tz2Input = document.getElementById('tz2');
+const compareBtn = document.getElementById('compare-btn');
+const timeDifferenceElement = document.getElementById('time-difference');
+
+// Time zones mapping
+const timeZoneMap = {
+    "New York": "America/New_York",
+    "London": "Europe/London",
+    "Tokyo": "Asia/Tokyo",
+    "Sydney": "Australia/Sydney",
+};
+
+// Default time zone for added cities
+function getDefaultTimeZone(city) {
+    return "UTC"; // Default for any user-added city
+}
+
+function updateClock() {
+    cityListElement.innerHTML = '';
+    cities.forEach(city => {
+        const time = new Date().toLocaleString("en-US", { timeZone: getTimeZone(city) });
+        const cityElement = document.createElement('div');
+        cityElement.className = 'city-item';
+        cityElement.textContent = `${city}: ${time}`;
+        cityListElement.appendChild(cityElement);
+    });
+}
+
+function getTimeZone(city) {
+    return timeZoneMap[city] || getDefaultTimeZone(city);
+}
+
+function addCity() {
+    const newCity = cityInput.value.trim();
+    if (newCity && !cities.includes(newCity)) {
+        cities.push(newCity);
+        cityInput.value = '';
+        updateClock(); // Update the clock display immediately
+    } else if (cities.includes(newCity)) {
+        alert("City already added.");
+    } else {
+        alert("Invalid city. Please enter a recognized city name.");
+    }
+}
+
+function compareTimeZones() {
+    const tz1 = tz1Input.value.trim();
+    const tz2 = tz2Input.value.trim();
+
+    const timeZone1 = getTimeZone(tz1);
+    const timeZone2 = getTimeZone(tz2);
+
+    if (timeZone1 !== "UTC" && timeZone2 !== "UTC") {
+        const now = new Date();
+        const offset1 = (new Date(now.toLocaleString("en-US", { timeZone: timeZone1 })).getHours());
+        const offset2 = (new Date(now.toLocaleString("en-US", { timeZone: timeZone2 })).getHours());
+        const difference = Math.abs(offset1 - offset2);
+        timeDifferenceElement.textContent = `Time difference: ${difference} hour(s)`;
+    } else {
+        timeDifferenceElement.textContent = "Invalid time zone specified.";
+    }
+}
+
+addCityBtn.addEventListener('click', addCity);
+compareBtn.addEventListener('click', compareTimeZones);
+setInterval(updateClock, 1000);
+updateClock();
+
     </script>
 </body>
 </html>
