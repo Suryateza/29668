@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -28,6 +29,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1 class="text-center">World Clock Widget</h1>
@@ -39,8 +41,26 @@
             <div class="col-md-6">
                 <h4>Time Zone Comparison</h4>
                 <div class="form-group">
-                    <input type="text" id="tz1" class="form-control" placeholder="Enter first timezone (e.g., 'America/New_York')">
-                    <input type="text" id="tz2" class="form-control mt-2" placeholder="Enter second timezone (e.g., 'Europe/London')">
+                    <select id="tz1" class="form-control">
+                        <option value="">Select first time zone</option>
+                        <option value="America/New_York">New York</option>
+                        <option value="Europe/London">London</option>
+                        <option value="Asia/Tokyo">Tokyo</option>
+                        <option value="Australia/Sydney">Sydney</option>
+                        <option value="Europe/Paris">Paris</option>
+                        <option value="Asia/Dubai">Dubai</option>
+                        <option value="Asia/Kolkata">Kolkata</option>
+                    </select>
+                    <select id="tz2" class="form-control mt-2">
+                        <option value="">Select second time zone</option>
+                        <option value="America/New_York">New York</option>
+                        <option value="Europe/London">London</option>
+                        <option value="Asia/Tokyo">Tokyo</option>
+                        <option value="Australia/Sydney">Sydney</option>
+                        <option value="Europe/Paris">Paris</option>
+                        <option value="Asia/Dubai">Dubai</option>
+                        <option value="Asia/Kolkata">Kolkata</option>
+                    </select>
                     <button id="compareBtn" class="btn btn-primary mt-2">Compare Time Zones</button>
                 </div>
                 <div id="timeDifference" class="mt-3"></div>
@@ -49,12 +69,22 @@
         <div class="row mb-4">
             <div class="col-md-12">
                 <h4>Customize Cities</h4>
-                <input type="text" id="cityInput" class="form-control" placeholder="Add a city (e.g., 'Tokyo')">
+                <select id="citySelect" class="form-control">
+                    <option value="">Select a city</option>
+                    <option value="America/New_York">New York</option>
+                    <option value="Europe/London">London</option>
+                    <option value="Asia/Tokyo">Tokyo</option>
+                    <option value="Australia/Sydney">Sydney</option>
+                    <option value="Europe/Paris">Paris</option>
+                    <option value="Asia/Dubai">Dubai</option>
+                    <option value="Asia/Kolkata">Kolkata</option>
+                </select>
                 <button id="addCityBtn" class="btn btn-success mt-2">Add City</button>
                 <ul id="customCities" class="list-group mt-3"></ul>
             </div>
         </div>
         <button id="toggleMode" class="btn btn-secondary">Toggle Dark/Light Mode</button>
+        <button id="toggleFormat" class="btn btn-info mt-2">Switch to 12-hour Format</button>
         <div id="map" class="mt-4"></div>
     </div>
 
@@ -67,11 +97,13 @@
         const cityDisplay = document.getElementById('clockDisplay');
         const customCities = document.getElementById('customCities');
         const toggleModeBtn = document.getElementById('toggleMode');
+        const toggleFormatBtn = document.getElementById('toggleFormat');
         let darkMode = false;
+        let is24HourFormat = true;
 
         // Function to initialize the map
         function initMap() {
-            const map = L.map('map').setView([20, 0], 2); // Centered on the world
+            const map = L.map('map').setView([20, 0], 2);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
             }).addTo(map);
@@ -81,10 +113,12 @@
         function updateClocks() {
             cityDisplay.innerHTML = '';
             cities.forEach(city => {
-                const time = moment.tz(city).format('HH:mm:ss');
+                const time = is24HourFormat
+                    ? moment.tz(city).format('HH:mm:ss')
+                    : moment.tz(city).format('hh:mm:ss A');
                 const cityItem = document.createElement('div');
                 cityItem.className = 'list-group-item';
-                cityItem.innerHTML = `${city}: <strong>${time}</strong>`;
+                cityItem.innerHTML = `${city.split('/')[1]}: <strong>${time}</strong>`;
                 cityDisplay.appendChild(cityItem);
             });
         }
@@ -99,29 +133,38 @@
             const tz1 = document.getElementById('tz1').value;
             const tz2 = document.getElementById('tz2').value;
 
-            if (isValidTimezone(tz1) && isValidTimezone(tz2)) {
-                const time1 = moment.tz(tz1).format('HH:mm:ss');
-                const time2 = moment.tz(tz2).format('HH:mm:ss');
+            if (tz1 && tz2) {
+                const time1 = is24HourFormat
+                    ? moment.tz(tz1).format('HH:mm:ss')
+                    : moment.tz(tz1).format('hh:mm:ss A');
+                const time2 = is24HourFormat
+                    ? moment.tz(tz2).format('HH:mm:ss')
+                    : moment.tz(tz2).format('hh:mm:ss A');
                 const diff = (moment.tz(tz1).utcOffset() - moment.tz(tz2).utcOffset()) / 60;
-                const differenceText = `Time difference between ${tz1} and ${tz2} is ${diff} hours.`;
-                document.getElementById('timeDifference').innerHTML = `${tz1}: ${time1} | ${tz2}: ${time2} <br> ${differenceText}`;
+                const differenceText = `Time difference between ${tz1.split('/')[1]} and ${tz2.split('/')[1]} is ${diff} hours.`;
+                document.getElementById('timeDifference').innerHTML = `${tz1.split('/')[1]}: ${time1} | ${tz2.split('/')[1]}: ${time2} <br> ${differenceText}`;
             } else {
-                alert('Invalid timezone entered. Please use a valid timezone name.');
+                alert('Please select valid time zones.');
             }
         });
 
         // Function to add a custom city
         document.getElementById('addCityBtn').addEventListener('click', () => {
-            const cityInput = document.getElementById('cityInput').value;
-            if (isValidTimezone(cityInput)) {
-                cities.push(cityInput);
-                const cityItem = document.createElement('li');
-                cityItem.className = 'list-group-item';
-                cityItem.innerHTML = cityInput;
-                customCities.appendChild(cityItem);
-                document.getElementById('cityInput').value = '';
+            const citySelect = document.getElementById('citySelect');
+            const cityInput = citySelect.value;
+            const cityName = citySelect.options[citySelect.selectedIndex].text;
+
+            if (cityInput && isValidTimezone(cityInput)) {
+                if (!cities.includes(cityInput)) {
+                    cities.push(cityInput);
+                    const cityItem = document.createElement('li');
+                    cityItem.className = 'list-group-item';
+                    cityItem.innerHTML = cityName;
+                    customCities.appendChild(cityItem);
+                }
+                citySelect.value = '';
             } else {
-                alert('Invalid timezone entered. Please use a valid timezone name.');
+                alert('Please select a valid city.');
             }
         });
 
@@ -131,10 +174,18 @@
             document.body.classList.toggle('dark-mode', darkMode);
         });
 
+        // Function to toggle time format
+        toggleFormatBtn.addEventListener('click', () => {
+            is24HourFormat = !is24HourFormat;
+            toggleFormatBtn.textContent = is24HourFormat ? 'Switch to 12-hour Format' : 'Switch to 24-hour Format';
+            updateClocks();
+        });
+
         // Initialize map and update clocks every second
         initMap();
         setInterval(updateClocks, 1000);
         updateClocks();
     </script>
 </body>
+
 </html>
